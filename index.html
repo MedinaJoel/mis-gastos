@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#6366f1">
+<title>Mis Gastos</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --primary: #6366f1;
+    --primary-light: #eef0ff;
+    --primary-dark: #4f52c2;
+    --bg: #f4f5f9;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #8a8fa8;
+    --border: #f0f1f8;
+    --success: #22c55e;
+    --success-light: #f0fdf4;
+    --radius: 20px;
+    --radius-sm: 14px;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: white;
+    padding: 52px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    background: var(--bg);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+  }
+  .back-btn svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { font-size: 22px; font-weight: 800; color: var(--text); }
+
+  /* Scroll area */
+  .scroll-area {
+    padding: 16px 16px 120px;
+    overflow-y: auto;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+
+  /* Voice section */
+  .voice-section {
+    background: linear-gradient(135deg, #f0f1ff, #e8eaff);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px dashed #b8bcf0;
+  }
+  .voice-btn {
+    width: 72px; height: 72px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.2);
+    border: none; cursor: pointer;
+  }
+  .voice-btn svg { width: 32px; height: 32px; stroke: var(--primary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .voice-label { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+  .voice-sublabel { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.5; }
+
+  /* Amount */
+  .amount-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f7f8fc;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    border: 2px solid #e8eaff;
+    transition: border-color 0.2s;
+  }
+  .amount-wrapper:focus-within { border-color: var(--primary); }
+  .currency-symbol { font-size: 22px; font-weight: 800; color: var(--primary); }
+  .amount-input {
+    font-size: 28px; font-weight: 800; color: var(--text);
+    border: none; background: transparent; outline: none;
+    width: 100%; font-family: 'Nunito', sans-serif;
+  }
+  .amount-input::placeholder { color: #c8cad8; }
+
+  /* Description */
+  .desc-input {
+    width: 100%; font-size: 15px; font-weight: 600; color: var(--text);
+    border: 2px solid transparent; background: #f7f8fc;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    outline: none; font-family: 'Nunito', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .desc-input:focus { border-color: var(--primary); }
+  .desc-input::placeholder { color: #c8cad8; }
+
+  /* Categories */
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .category-item {
+    background: #f7f8fc;
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .category-item.active { background: var(--primary-light); border-color: var(--primary); }
+  .category-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .cat-verduleria .category-icon { background: #e6ffe6; }
+  .cat-carniceria .category-icon { background: #ffe6e6; }
+  .cat-fuel .category-icon { background: #e6f4ff; }
+  .cat-health .category-icon { background: #e6fff4; }
+  .cat-merienda .category-icon { background: #fff8e6; }
+  .cat-jardin .category-icon { background: #eef0ff; }
+  .cat-delivery .category-icon { background: #fff0e6; }
+  .cat-otros .category-icon { background: #ffe6f0; }
+  .category-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; }
+
+  /* Auto date */
+  .auto-date {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--success-light);
+    border-radius: 12px; padding: 12px 14px;
+    border: 1.5px solid #bbf7d0;
+  }
+  .auto-date-icon {
+    width: 28px; height: 28px; background: var(--success);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .auto-date-icon svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .auto-date-text { font-size: 13px; font-weight: 700; color: #15803d; }
+  .auto-date-value { font-size: 12px; color: #16a34a; font-weight: 600; margin-left: auto; text-align: right; }
+
+  /* Notes */
+  .notes-input {
+    width: 100%; font-size: 14px; font-weight: 500; color: var(--text);
+    border: 2px solid transparent; background: #f7f8fc;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    outline: none; resize: none; font-family: 'Nunito', sans-serif;
+    min-height: 80px; transition: border-color 0.2s;
+  }
+  .notes-input:focus { border-color: var(--primary); }
+  .notes-input::placeholder { color: #c8cad8; }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%; padding: 18px;
+    background: var(--primary); border: none;
+    border-radius: 18px; font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 800; color: white;
+    cursor: pointer; letter-spacing: 0.3px;
+    box-shadow: 0 6px 20px rgba(99,102,241,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-bottom: 8px;
+  }
+  .submit-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(99,102,241,0.2); }
+  .submit-btn:disabled { background: #b0b4cc; box-shadow: none; cursor: not-allowed; }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: 88px; right: calc(50% - 215px + 16px);
+    width: 54px; height: 54px;
+    background: var(--text);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 24px rgba(26,26,46,0.3);
+    cursor: pointer; z-index: 20;
+    transition: transform 0.15s;
+  }
+  @media (max-width: 430px) {
+    .fab { right: 16px; }
+  }
+  .fab:active { transform: scale(0.93); }
+  .fab svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    height: 72px; background: white;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 0 8px 8px; z-index: 10;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 14px; border-radius: 14px;
+    transition: background 0.15s; min-width: 56px;
+  }
+  .nav-item.active { background: var(--primary-light); }
+  .nav-item svg { width: 22px; height: 22px; stroke: #b0b4cc; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item.active svg { stroke: var(--primary); }
+  .nav-label { font-size: 11px; font-weight: 700; color: #b0b4cc; }
+  .nav-item.active .nav-label { color: var(--primary); }
+  .nav-add-btn {
+    width: 52px; height: 52px; background: var(--primary);
+    border-radius: 18px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    margin-bottom: 8px;
+  }
+  .nav-add-btn svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--text); color: white;
+    padding: 12px 20px; border-radius: 14px;
+    font-size: 14px; font-weight: 700;
+    z-index: 100; transition: transform 0.3s ease;
+    white-space: nowrap; max-width: 90vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #15803d; }
+  .toast.error { background: #dc2626; }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white; border-radius: 50%;
+    animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <button class="back-btn">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <span class="header-title">Agregar gasto</span>
+</div>
+
+<!-- Content -->
+<div class="scroll-area">
+
+  <!-- Voice -->
+  <div class="voice-section">
+    <button class="voice-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
+    <span class="voice-label">Registrar por voz</span>
+    <span class="voice-sublabel">Próximamente: dictá tu gasto y la IA<br>lo interpreta y guarda automáticamente</span>
+  </div>
+
+  <!-- Amount -->
+  <div class="card">
+    <div class="card-label">Monto *</div>
+    <div class="amount-wrapper">
+      <span class="currency-symbol">$</span>
+      <input class="amount-input" id="amount" type="number" inputmode="decimal" placeholder="0.00">
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="card">
+    <div class="card-label">Descripción *</div>
+    <input class="desc-input" id="description" type="text" placeholder="Ej: Mercado, nafta, almuerzo...">
+  </div>
+
+  <!-- Category -->
+  <div class="card">
+    <div class="card-label">Categoría *</div>
+    <div class="category-grid" id="categoryGrid">
+      <div class="category-item cat-verduleria" data-cat="Verdulería">
+        <div class="category-icon">🥦</div>
+        <span class="category-name">Verdulería</span>
+      </div>
+      <div class="category-item cat-carniceria" data-cat="Carnicería">
+        <div class="category-icon">🥩</div>
+        <span class="category-name">Carnicería</span>
+      </div>
+      <div class="category-item cat-fuel" data-cat="Combustible">
+        <div class="category-icon">⛽</div>
+        <span class="category-name">Combustible</span>
+      </div>
+      <div class="category-item cat-health" data-cat="Salud">
+        <div class="category-icon">💊</div>
+        <span class="category-name">Salud</span>
+      </div>
+      <div class="category-item cat-merienda" data-cat="Merienda">
+        <div class="category-icon">☕</div>
+        <span class="category-name">Merienda</span>
+      </div>
+      <div class="category-item cat-jardin" data-cat="Jardín">
+        <div class="category-icon">🎒</div>
+        <span class="category-name">Jardín</span>
+      </div>
+      <div class="category-item cat-delivery" data-cat="Delivery y salidas">
+        <div class="category-icon">🛵</div>
+        <span class="category-name">Delivery y salidas</span>
+      </div>
+      <div class="category-item cat-otros" data-cat="Otros">
+        <div class="category-icon">🛍️</div>
+        <span class="category-name">Otros</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto date -->
+  <div class="card">
+    <div class="card-label">Fecha y hora</div>
+    <div class="auto-date">
+      <div class="auto-date-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="auto-date-text">Se registra automáticamente</span>
+      <span class="auto-date-value" id="liveDate"></span>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="card-label">Notas (opcional)</div>
+    <textarea class="notes-input" id="notes" placeholder="Algún detalle adicional..."></textarea>
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn" id="submitBtn" onclick="saveExpense()">Agregar gasto</button>
+
+</div>
+
+<!-- FAB scan -->
+<div class="fab" title="Escanear recibo">
+  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Inicio</span>
+  </div>
+  <div class="nav-item active">
+    <div class="nav-add-btn">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <span class="nav-label" style="color:var(--primary)">Agregar</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span class="nav-label">Analítica</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Buscar</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    <span class="nav-label">Ajustes</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const SPREADSHEET_ID = '1jTpLQK5RXGON1sFSbmAIzextGzpoo2JTHa8sIheEINc';
+const SERVICE_ACCOUNT_EMAIL = 'gastos-app@mis-gastos-491819.iam.gserviceaccount.com';
+const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDE1D/My0DeuFo9
+e9QDbrwJUHO4TcyHo2i5Ck7OIjAE6zeqqU+Yk02vTeLTGpiaG2A2aGfKU8TwYhlL
+bt9VHoQ8zdJpSTSxObND3n3YwjM65aevvouPM1jvozVpEGnl2NmZzEXV9LedPb2M
+wuVK31/u23DEHEwjwDQMZavGu9Ygr+GdEZ6vrrISRdgtOxGfCBdo8FhUfyCw8j8R
+2ZLYb/tQbt12toX0ttrdGog7GZgueFL/O1COK74dVJgPNLd+TU4xNhUIPectocFG
+ES7+Dg0X1YM2wioU/BAnzD0WbSETw2FDJEJEadPoaVxROT0sfBdIy2LEj7MxKaVp
+O87BPJjvAgMBAAECggEAE3Tafg9LcTJIM7kYji+CJYOPGAiTIrqCLbE5dM8hVjy8
+8UEXGqelySHwVyc5lX/TEdD3pyLpUUyV+beftDJpJpK/IJdspRllWvY7FDp7xbzE
+4WHH07B8mdE7nhA4ZgP6qP7UNAZvdHr30HQr8t8Q0YCRbZLq6qljTvE2VG9MU+Lf
+Wh5hTb3LYDKbM9+g9Pku+iUrUY46SOYMDCeijN2CqJefU2jGZlyRfGhynTi7ivmZ
+gNdWf235EFYhptUfQtEJH0LTjmL6VoLB7VOzUEqlXMLOo5S78PRVNoXDOxOPjE3l
+u4aS4t4GmMPtP1ET4EddiCqV1R0U+EXOq5+UgzwE4QKBgQDlZew5LmDB92llybo9
+GRzLoirgeXdaQlvHW5gSQL5ULdljhhP9S6n4iEFEk4ahtsDljwLjJN0hP5bnaFpa
+amPwehM1K+b2DCsoVnoqkedBIdyZRN9PgJGjCuUwpaCb6HIjYv1rM41bC8mhNxao
+HihZZPpNy0tbj5M9FRIYaqI1YQKBgQDbp3VusyKHP4NvkWiKxvtEP1akO0+DCRWW
+KMuVssWx2RFtWUhWQ3JYSw8h4Yn+cRiHRMpFAMZvYNlhN5BHOkEuoa1EwwARWlr8
+VyJOucmPLBltlTSCipK8AGRutneG7NT+CidSXR6o6AgM0hFac2GRc8plUZsJzh+i
+ihPKf8IgTwKBgG2ucObaNOspB5ziegiShEEc9ZFEontmdQl50tkPWbFYBrPePJqE
+Xe12AHbwbpPNlKdt3HyMeKpYBCf6rhDDA6vMQnjO1+xW3x+3UUwfXMm4jgg+dONH
+Xtra76510rgYyNIAl5h1GqYomaxacZvKZ5JuhHtDs3FA0a6H75H7EjmhAoGBAJSC
+dj1wVEoJQT5vm7Uor74G7PeBOlMoEzZBQtRl2JBUaRn7oZLhazATH5oSuZAUuzbJ
+5dAdpAyt+ItoW94snuF+Yn35MdSJuLaf2wxLROHOOSsEFEqmkmsWANFyAQJyoddY
+2hkv6IjeyIKSjTUQickj9pXmROKuQGlO3e6tzny1AoGBANPNGiCkvCWn/Y8CAn2n
+hI7FL0SbHM99McLqePwRm00VvQlbpcnP60ug6y2gU2pAhj7u7Ujq4mU7vT4hAWHx
+wrN6+cHNY+FBJqWeLYgzgELDyszn4RJijfHyg88Hn26D2tZiqiOSRpFGJ+kEwkKh
+X6yi1RZiMQdUGgNR0eLYf2gh
+-----END PRIVATE KEY-----`;
+
+// ─── STATE ────────────────────────────────────────────────
+let selectedCategory = '';
+
+// ─── DATE DISPLAY ─────────────────────────────────────────
+function updateDate() {
+  const now = new Date();
+  const opts = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+  document.getElementById('liveDate').textContent = now.toLocaleDateString('es-AR', opts);
+}
+updateDate();
+setInterval(updateDate, 1000);
+
+// ─── CATEGORIES ───────────────────────────────────────────
+document.querySelectorAll('.category-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    selectedCategory = item.dataset.cat;
+  });
+});
+
+// ─── TOAST ────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── JWT / GOOGLE AUTH ────────────────────────────────────
+function base64url(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+function base64urlUint8(bytes) {
+  let str = '';
+  bytes.forEach(b => str += String.fromCharCode(b));
+  return base64url(str);
+}
+
+async function getAccessToken() {
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claim = base64url(JSON.stringify({
+    iss: SERVICE_ACCOUNT_EMAIL,
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  }));
+
+  const signingInput = `${header}.${claim}`;
+
+  // Import private key
+  const pemBody = PRIVATE_KEY.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');
+  const binaryDer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8', binaryDer.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false, ['sign']
+  );
+
+  const encoder = new TextEncoder();
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5', cryptoKey, encoder.encode(signingInput)
+  );
+
+  const jwt = `${signingInput}.${base64urlUint8(new Uint8Array(signature))}`;
+
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
+  });
+  const data = await res.json();
+  if (!data.access_token) throw new Error('No se pudo obtener el token de acceso');
+  return data.access_token;
+}
+
+// ─── SHEET NAME (mes actual) ──────────────────────────────
+function getSheetName(date) {
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return `${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+// ─── GET OR CREATE SHEET TAB ──────────────────────────────
+async function ensureSheet(token, sheetName) {
+  // Get existing sheets
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const data = await res.json();
+  const exists = data.sheets.some(s => s.properties.title === sheetName);
+
+  if (!exists) {
+    // Create new sheet tab
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{ addSheet: { properties: { title: sheetName } } }]
+      })
+    });
+    // Add headers
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName)}!A1:F1?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [['Fecha', 'Hora', 'Descripción', 'Monto', 'Categoría', 'Notas']] })
+      }
+    );
+  }
+}
+
+// ─── APPEND ROW ───────────────────────────────────────────
+async function appendRow(token, sheetName, row) {
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName)}!A:F:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [row] })
+    }
+  );
+  if (!res.ok) throw new Error('Error al guardar en Sheets');
+}
+
+// ─── SAVE EXPENSE ─────────────────────────────────────────
+async function saveExpense() {
+  const amount = document.getElementById('amount').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    showToast('⚠️ Ingresá un monto válido', 'error'); return;
+  }
+  if (!description) {
+    showToast('⚠️ Ingresá una descripción', 'error'); return;
+  }
+  if (!selectedCategory) {
+    showToast('⚠️ Seleccioná una categoría', 'error'); return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+  try {
+    const now = new Date();
+    const fecha = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    const sheetName = getSheetName(now);
+
+    const token = await getAccessToken();
+    await ensureSheet(token, sheetName);
+    await appendRow(token, sheetName, [fecha, hora, description, parseFloat(amount), selectedCategory, notes]);
+
+    showToast('✅ Gasto guardado correctamente', 'success');
+
+    // Reset form
+    document.getElementById('amount').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('notes').value = '';
+    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    selectedCategory = '';
+
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Error al guardar. Revisá la conexión.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Agregar gasto';
+  }
+}
+</script>
+</body>
+</html>
